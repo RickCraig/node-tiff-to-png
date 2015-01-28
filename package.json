@@ -1,0 +1,29 @@
+{
+  "name": "tiff-to-png",
+  "version": "0.1.0",
+  "description": "A batch converter for tiff files to png.",
+  "main": "lib/convert.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RickCraig/node-tiff-to-png.git"
+  },
+  "keywords": [
+    "tiff",
+    "png",
+    "graphicsmagick",
+    "convert"
+  ],
+  "author": "Rick Craig <rick@receiptful.com> (https://receiptful.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RickCraig/node-tiff-to-png/issues"
+  },
+  "homepage": "https://github.com/RickCraig/node-tiff-to-png",
+  "devDependencies": {
+    "chai": "^1.10.0",
+    "mocha": "^2.1.0"
+  }
+}
