@@ -1,6 +1,6 @@
 {
   "name": "tiff-to-png",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A batch converter for multipage tiff files to png (or any imagemagick supported type).",
   "main": "./lib/convert.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "imagemagick",
     "convert"
   ],
-  "author": "Rick Craig <rick@spacerevolver.com>",
+  "author": "Rick Craig <richard.craig@gmail.com",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/RickCraig/node-tiff-to-png/issues"
