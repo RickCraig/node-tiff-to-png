@@ -1,4 +1,4 @@
-# node-tiff-to-png
+# Tiff to PNG
 A batch converter for multi page TIFF files to png or any other format you have support for within your installation of imagemagick. 
 
 # Purpose
@@ -108,6 +108,7 @@ converter.convertArray(tiffs, location);
 
 ## Accessible Variables
 Some variables that are accessible off the Tiff to PNG instance.
+
 | Variable  | Description                                                                                                         |
 |-----------|---------------------------------------------------------------------------------------------------------------------|
 | converted | An array of objects that contain the original path, the target path and whether the conversion is a success or not. |
