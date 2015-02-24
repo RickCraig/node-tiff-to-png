@@ -156,6 +156,90 @@ describe('Convert: #tiff-to-png', function(){
 
     });
 
+    it('Should set the prefix to "page" by default when prefix is not passed', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        createDirStub.restore();
+        execStub.restore();
+        command.should.contain('page');
+        done();
+      });
+
+      var converter = new ConvertTiff({});
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+      converter.convert();
+
+    });
+
+    it('Should set the prefix when prefix is passed', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        createDirStub.restore();
+        execStub.restore();
+        command.should.contain('pagefoo');
+        done();
+      });
+
+      var converter = new ConvertTiff({
+        prefix: 'pagefoo'
+      });
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+      converter.convert();
+
+    });
+
+    it('Should set the suffix to "" by default when suffix is not passed', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        createDirStub.restore();
+        execStub.restore();
+        command.should.contain('page%d.png');
+        done();
+      });
+
+      var converter = new ConvertTiff({});
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+      converter.convert();
+
+    });
+
+    it('Should set the suffix when suffix is passed', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        createDirStub.restore();
+        execStub.restore();
+        command.should.contain('_foo');
+        done();
+      });
+
+      var converter = new ConvertTiff({
+        suffix: '_foo'
+      });
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+      converter.convert();
+
+    });
+
     it('Should log an error when there is a problem with the creation of a directory', function(done){
       var error = 'Test Error';
       var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
