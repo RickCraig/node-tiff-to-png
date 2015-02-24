@@ -1,4 +1,4 @@
-# Tiff to PNG
+# TIFF to PNG
 A batch converter for multi page TIFF files to png or any other format you have support for within your installation of imagemagick. 
 
 # Purpose
