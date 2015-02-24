@@ -1,4 +1,5 @@
 var ConvertTiff = require('../lib/convert'),
+  childProcess = require('child_process'),
   logger = require('../lib/logger'),
   should = require('chai').should(),
   fs = require('fs'),
@@ -115,29 +116,337 @@ describe('Convert: #tiff-to-png', function(){
 
   describe('Convert', function(){
 
-    it('Should default to A4+0+0 when no page size is passed');
-    it('Should set the page size when the page size is passed');
-    it('Should set the file type to png by default when type is not passed');
-    it('Should set the file type to the file type passed');
-    it('Should log an error when there is a problem with the creation of a directory');
-    it('Should add an error to the errors array when conversion fails');
-    it('Should add the converted file with the outcome to the converted array when failed');
-    it('Should add the converted file with the outcome to the converted array when successful');
-    it('Should call the progress callback when a single file has completed');
-    it('Should call the complete callback when the array is complete');
+    it('Should set the file type to png by default when type is not passed', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        createDirStub.restore();
+        execStub.restore();
+        command.should.contain('.png');
+        done();
+      });
+
+      var converter = new ConvertTiff({});
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+      converter.convert();
+
+    });
+
+    it('Should set the file type to the file type passed', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        createDirStub.restore();
+        execStub.restore();
+        command.should.contain('.jpg');
+        done();
+      });
+
+      var converter = new ConvertTiff({type: 'jpg'});
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+      converter.convert();
+
+    });
+
+    it('Should log an error when there is a problem with the creation of a directory', function(done){
+      var error = 'Test Error';
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb(error);
+      });
+
+      var loggerStub = sinon.stub(logger, 'error', function(message){
+        createDirStub.restore();
+        loggerStub.restore();
+        message.should.equal(error);
+        done();
+      });
+
+      var converter = new ConvertTiff({type: 'jpg'});
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+      converter.convert();
+
+    });
+
+    it('Should add an error to the errors array when conversion fails', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        cb('Test Error');
+      });
+
+      var converter = new ConvertTiff({type: 'jpg'});
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+      converter.complete = function(errors, total){
+        createDirStub.restore();
+        execStub.restore();
+        converter.errors.length.should.equal(1);
+        done();
+      }
+      converter.convert();
+
+    });
+
+    it('Should add the converted file with the outcome to the converted array when failed', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        cb('Test Error');
+      });
+
+      var converter = new ConvertTiff({type: 'jpg'});
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+      converter.complete = function(errors, total){
+        createDirStub.restore();
+        execStub.restore();
+        converter.converted.length.should.equal(1);
+        converter.converted[0].success.should.be.false;
+        done();
+      }
+      converter.convert();
+
+    });
+
+    it('Should add the converted file with the outcome to the converted array when successful', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        cb();
+      });
+
+      var converter = new ConvertTiff({type: 'jpg'});
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+      converter.complete = function(errors, total){
+        createDirStub.restore();
+        execStub.restore();
+        converter.converted.length.should.equal(1);
+        converter.converted[0].success.should.be.true;
+        done();
+      }
+      converter.convert();
+
+    });
+
+    it('Should call the progress callback when a single file has completed', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        cb('Test Error');
+      });
+
+      var called = 0;
+
+      var converter = new ConvertTiff({type: 'jpg'});
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+
+      converter.progress = function(converted, total){
+        called++;
+      };
+
+      converter.complete = function(errors, total){
+        createDirStub.restore();
+        execStub.restore();
+        called.should.equal(1);
+        done();
+      }
+
+      converter.convert();
+
+    });
+
+    it('Should call the complete callback when the array is complete', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        cb();
+      });
+
+      var converter = new ConvertTiff({type: 'jpg'});
+      converter.tiffs = ['/test/foo.tif'];
+      converter.total = 1;
+      converter.location = './public';
+
+      converter.complete = function(errors, total){
+        createDirStub.restore();
+        execStub.restore();
+        done();
+      }
+
+      converter.convert();
+
+    });
+
+    it('Should run convert again once a file has been converted', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        cb();
+      });
+
+      var convertSpy = sinon.spy(ConvertTiff.prototype, 'convert');
+
+      var converter = new ConvertTiff({type: 'jpg'});
+      converter.tiffs = ['/test/foo.tif', '/test/foo.tif'];
+      converter.total = 2;
+      converter.location = './public';
+
+      converter.complete = function(errors, total){
+        createDirStub.restore();
+        execStub.restore();
+        convertSpy.callCount.should.equal(2);
+        convertSpy.restore();
+        done();
+      }
+
+      converter.convert();
+
+    });
 
   });
 
   describe('Convert Array', function(){
-    it('Should log an error when the array of tiffs is null');
-    it('Should log an error when the array of tiffs is empty');
-    it('Should log an error when the location is null');
-    it('Should log an error when the location is empty');
-    it('Should reset all variables related to the conversion');
-    it('Should set the instance variable "tiffs"');
-    it('Should set the location');
-    it('Should set the total to the length of the array');
-    it('Should call convert after reset');
+    it('Should log an error when the array of tiffs is null', function(done){
+      var convertStub = sinon.stub(ConvertTiff.prototype, 'convert');
+      var loggerStub = sinon.stub(logger, 'error', function(message){
+        convertStub.restore();
+        loggerStub.restore();
+        message.should.equal('An array of tiffs is required');
+        done();
+      });
+
+      var converter = new ConvertTiff();
+      converter.convertArray();
+    });
+
+    it('Should log an error when the array of tiffs is empty', function(done){
+      var convertStub = sinon.stub(ConvertTiff.prototype, 'convert');
+      var loggerStub = sinon.stub(logger, 'error', function(message){
+        convertStub.restore();
+        loggerStub.restore();
+        message.should.equal('An array of tiffs is required');
+        done();
+      });
+
+      var converter = new ConvertTiff();
+      converter.convertArray([]);
+    });
+
+    it('Should log an error when the location is null', function(done){
+      var convertStub = sinon.stub(ConvertTiff.prototype, 'convert');
+      var loggerStub = sinon.stub(logger, 'error', function(message){
+        convertStub.restore();
+        loggerStub.restore();
+        message.should.equal('The location folder is required');
+        done();
+      });
+
+      var converter = new ConvertTiff();
+      converter.convertArray(['./test/foo.tif']);
+    });
+
+    it('Should log an error when the location is empty', function(done){
+      var convertStub = sinon.stub(ConvertTiff.prototype, 'convert');
+      var loggerStub = sinon.stub(logger, 'error', function(message){
+        convertStub.restore();
+        loggerStub.restore();
+        message.should.equal('The location folder is required');
+        done();
+      });
+
+      var converter = new ConvertTiff();
+      converter.convertArray(['./test/foo.tif'], '');
+    });
+
+    it('Should reset all variables related to the conversion', function(){
+      var convertStub = sinon.stub(ConvertTiff.prototype, 'convert');
+
+      var converter = new ConvertTiff();
+      converter.converted = [
+        'foo1', 'foo2'
+      ];
+      converter.errors = [
+        'error1', 'error2'
+      ];
+
+      converter.convertArray(['./test/foo.tif'], './public');
+
+      converter.converted.length.should.be.zero;
+      converter.errors.length.should.be.zero;
+      convertStub.restore();
+    });
+
+    it('Should set the instance variable "tiffs"', function(){
+      var convertStub = sinon.stub(ConvertTiff.prototype, 'convert');
+
+      var converter = new ConvertTiff();
+
+      converter.convertArray(['./test/foo.tif'], './public');
+
+      converter.tiffs.length.should.equal(1);
+      convertStub.restore();
+    });
+
+    it('Should set the location', function(){
+      var convertStub = sinon.stub(ConvertTiff.prototype, 'convert');
+
+      var converter = new ConvertTiff();
+
+      converter.convertArray(['./test/foo.tif'], './public');
+
+      converter.location.should.equal('./public');
+      convertStub.restore();
+    });
+
+    it('Should set the total to the length of the array', function(){
+      var convertStub = sinon.stub(ConvertTiff.prototype, 'convert');
+
+      var converter = new ConvertTiff();
+
+      converter.convertArray(['./test/foo.tif'], './public');
+
+      converter.total.should.equal(1);
+      convertStub.restore();
+    });
+
+    it('Should call convert after reset', function(done){
+      var convertStub = sinon.stub(ConvertTiff.prototype, 'convert', function(){
+        convertStub.restore();
+        done();
+      });
+
+      var converter = new ConvertTiff();
+
+      converter.convertArray(['./test/foo.tif'], './public');
+    });
   });
 
 });
