@@ -1,5 +1,6 @@
 # TIFF to PNG
 [![Build Status](https://travis-ci.org/RickCraig/node-tiff-to-png.svg?branch=master)](https://travis-ci.org/RickCraig/node-tiff-to-png) [![Code Climate](https://codeclimate.com/github/RickCraig/node-tiff-to-png/badges/gpa.svg)](https://codeclimate.com/github/RickCraig/node-tiff-to-png) [![Code Climate](https://codeclimate.com/github/RickCraig/node-tiff-to-png/badges/gpa.svg)](https://codeclimate.com/github/RickCraig/node-tiff-to-png)
+
 A batch converter for multi page TIFF files to png or any other format you have support for within your installation of imagemagick. 
 
 # Purpose
