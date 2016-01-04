@@ -46,15 +46,19 @@ The full options object is as follows:
   type: 'jpg',
   logLevel: 1,
   prefix: 'page',
-  suffix: '_foo'
+  suffix: '_foo',
+  tmpPath: '/path/to/tmp',
+  autoRemoveTmp: true
 }
 ```
-| Option   | Default | Description                                                                                                                 |
-|----------|---------|-----------------------------------------------------------------------------------------------------------------------------|
-| type     | 'png'   | The file type of the converted files                                                                                        |
-| logLevel | 0       | The level of the logs required. 0: Errors only, 1: Information                                                              |
-| prefix   | 'page'  | The string that will be prepended to the file names of the pages converted. E.g. 'page': page1.png                          |
-| suffix   | ''      | The string that will be appended onto the end of the file names of the page converted. E.g. '_invoices': page1_invoices.png |
+| Option        | Default | Description                                                                                                                 |
+|---------------|---------|-----------------------------------------------------------------------------------------------------------------------------|
+| type          | 'png'   | The file type of the converted files                                                                                        |
+| logLevel      | 0       | The level of the logs required. 0: Errors only, 1: Information                                                              |
+| prefix        | 'page'  | The string that will be prepended to the file names of the pages converted. E.g. 'page': page1.png                          |
+| suffix        | ''      | The string that will be appended onto the end of the file names of the page converted. E.g. '_invoices': page1_invoices.png |
+| tmpPath       | null    | Overwrites the Imagemagick default tmp directory path                                                                       |
+| autoRemoveTmp | false   | Automatically removes all files from tmpPath prefixed with magick-*, this happens on process completion                     |
 
 ## Callbacks
 There are 2 available callbacks to allow you to create actions on the success of individual conversions and when the queue is complete.

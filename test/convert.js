@@ -415,7 +415,115 @@ describe('Convert: #tiff-to-png', function(){
 
     });
 
+    it('Should pass the temporary path when tmpPath option is set', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        command.should.contain('/path/to/tmp');
+        cb();
+      });
+
+      var convertSpy = sinon.spy(ConvertTiff.prototype, 'convert');
+
+      var converter = new ConvertTiff({ tmpPath: '/path/to/tmp' });
+      converter.tiffs = ['/test/foo.tif', '/test/foo.tif'];
+      converter.total = 2;
+      converter.location = './public';
+
+      converter.complete = function(errors, total){
+        createDirStub.restore();
+        execStub.restore();
+        convertSpy.callCount.should.equal(2);
+        convertSpy.restore();
+        done();
+      }
+
+      converter.convert();
+
+    });
+
+    it('Should attempt to clear all files named magick-* from the tmpPath', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        cb();
+      });
+
+      var readDirStub = sinon.stub(fs, 'readdir', function(path, cb) {
+        cb(null, ['./magick-bla.ext']);
+      });
+
+      var unlinkStub = sinon.stub(fs, 'unlink', function(path) {
+        path.should.contain('magick-bla.ext');
+      });
+
+      var convertSpy = sinon.spy(ConvertTiff.prototype, 'convert');
+
+      var converter = new ConvertTiff({ tmpPath: '/path/to/tmp', autoRemoveTmp: true });
+      converter.tiffs = ['/test/foo.tif', '/test/foo.tif'];
+      converter.total = 2;
+      converter.location = './public';
+
+      converter.complete = function(errors, total){
+        createDirStub.restore();
+        execStub.restore();
+        readDirStub.restore();
+        unlinkStub.restore();
+        convertSpy.callCount.should.equal(2);
+        convertSpy.restore();
+        done();
+      }
+
+      converter.convert();
+
+    });
+
+    it('Should log an error when an error occurs checking the tmp directory', function(done){
+      var createDirStub = sinon.stub(ConvertTiff.prototype, 'createDir', function(target, filename, cb){
+        cb();
+      });
+
+      var execStub = sinon.stub(childProcess, 'exec', function(command, cb){
+        cb();
+      });
+
+      var error = new Error('Test Error');
+      var readDirStub = sinon.stub(fs, 'readdir', function(path, cb) {
+        cb(error, []);
+      });
+
+      var loggerStub = sinon.stub(logger, 'error', function(message){
+        createDirStub.restore();
+        execStub.restore();
+        loggerStub.restore();
+        readDirStub.restore();
+        message.should.equal(error);
+        done();
+      });
+
+      var convertSpy = sinon.spy(ConvertTiff.prototype, 'convert');
+
+      var converter = new ConvertTiff({ tmpPath: '/path/to/tmp', autoRemoveTmp: true });
+      converter.tiffs = ['/test/foo.tif', '/test/foo.tif'];
+      converter.total = 2;
+      converter.location = './public';
+
+      converter.complete = function(errors, total){
+        convertSpy.callCount.should.equal(2);
+        convertSpy.restore();
+      }
+
+      converter.convert();
+
+    });
+
   });
+
+
 
   describe('Convert Array', function(){
     it('Should log an error when the array of tiffs is null', function(done){
