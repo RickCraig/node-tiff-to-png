@@ -1,7 +1,7 @@
 # TIFF to PNG
 [![Build Status](https://travis-ci.org/RickCraig/node-tiff-to-png.svg?branch=master)](https://travis-ci.org/RickCraig/node-tiff-to-png) [![Code Climate](https://codeclimate.com/github/RickCraig/node-tiff-to-png/badges/gpa.svg)](https://codeclimate.com/github/RickCraig/node-tiff-to-png) [![Test Coverage](https://codeclimate.com/github/RickCraig/node-tiff-to-png/badges/coverage.svg)](https://codeclimate.com/github/RickCraig/node-tiff-to-png)
 
-A batch converter for multi page TIFF files to png or any other format you have support for within your installation of imagemagick. 
+A batch converter for multi page TIFF files to png or any other format you have support for within your installation of imagemagick.
 
 # Purpose
 This module was created to solve the problem of passing 100+ multi page TIFFs into a converter.
@@ -48,7 +48,8 @@ The full options object is as follows:
   prefix: 'page',
   suffix: '_foo',
   tmpPath: '/path/to/tmp',
-  autoRemoveTmp: true
+  autoRemoveTmp: true,
+  commandPath: '/path/to/binary/convert.exe'
 }
 ```
 | Option        | Default | Description                                                                                                                 |
@@ -59,6 +60,7 @@ The full options object is as follows:
 | suffix        | ''      | The string that will be appended onto the end of the file names of the page converted. E.g. '_invoices': page1_invoices.png |
 | tmpPath       | null    | Overwrites the Imagemagick default tmp directory path                                                                       |
 | autoRemoveTmp | false   | Automatically removes all files from tmpPath prefixed with magick-*, this happens on process completion                     |
+| commandPath   | null    | Allows the specification of the command path for use with binaries or aliased convert commands                              |
 
 ## Callbacks
 There are 2 available callbacks to allow you to create actions on the success of individual conversions and when the queue is complete.
@@ -158,5 +160,3 @@ npm test
 This module was originally written to be used in a production environment. This will ensure that this module is well maintained, bug free and as up to date as possible.
 
 I will continue to make updates as often as required to have a consistently bug free platform, but I am happy to review any feature requests or issues and am accepting constructive pull requests.
-
-
