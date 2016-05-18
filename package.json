@@ -1,6 +1,6 @@
 {
   "name": "tiff-to-png",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A batch converter for multipage tiff files to png (or any imagemagick supported type).",
   "main": "./lib/convert.js",
   "scripts": {
