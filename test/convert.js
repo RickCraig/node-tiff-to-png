@@ -145,6 +145,34 @@ describe('Convert: #tiff-to-png', () => {
         mock.verify();
       });
 
+      it('Should log an error when the read dir fails', async () => {
+        const error = new Error('test');
+        sandbox.stub(fs, 'readdir').callsFake((path, cb) => {
+          cb(error);
+        });
+        const mock = sandbox.mock(logger)
+          .expects('error')
+          .withArgs(sinon.match(error));
+
+        const converter = new ConvertTiff(options);
+        await converter.removePaths();
+        mock.verify();
+      });
+
+      it('Should call unlink on any relevant files', async () => {
+        const mock = sandbox.mock(fs)
+          .expects('unlink')
+          .twice()
+          .yields();
+        sandbox.stub(fs, 'readdir').callsFake((path, cb) => {
+          cb(null, ['./magick-one', './magick-two']);
+        });
+
+        const converter = new ConvertTiff(options);
+        await converter.removePaths();
+        mock.verify();
+      });
+
     });
   });
 
@@ -157,7 +185,7 @@ describe('Convert: #tiff-to-png', () => {
         .withArgs(sinon.match('/test_save'));
 
       const converter = new ConvertTiff({ saveFolder: '/test_save' });
-      await converter.convert('/test/foo.tif', './public');
+      await converter.convert('/test/foo.tif', false, './public');
       mock.verify();
     });
 
@@ -168,7 +196,7 @@ describe('Convert: #tiff-to-png', () => {
         .withArgs(sinon.match('.png'));
 
       const converter = new ConvertTiff({});
-      await converter.convert('/test/foo.tif', './public');
+      await converter.convert('/test/foo.tif', false, './public');
       mock.verify();
     });
 
@@ -179,7 +207,28 @@ describe('Convert: #tiff-to-png', () => {
         .withArgs(sinon.match('.jpg'));
 
       const converter = new ConvertTiff({ type: 'jpg' });
-      await converter.convert('/test/foo.tif', './public');
+      await converter.convert('/test/foo.tif', false, './public');
+      mock.verify();
+    });
+
+    it('Should add the scene when passed', async () => {
+      sandbox.stub(ConvertTiff, 'createDir').resolves();
+      const mock = sandbox.mock(ConvertTiff)
+        .expects('call')
+        .withArgs(sinon.match('-scene 1'));
+
+      const converter = new ConvertTiff({ scene: 1 });
+      await converter.convert('/test/foo.tif', false, './public');
+      mock.verify();
+    });
+
+    it('should save in the place when no location is passed', async () => {
+      const mock = sandbox.mock(ConvertTiff)
+        .expects('call')
+        .withArgs(sinon.match('/test/%d.png'));
+
+      const converter = new ConvertTiff({ type: 'png' });
+      await converter.convert('/test/foo.tif');
       mock.verify();
     });
 
@@ -190,7 +239,7 @@ describe('Convert: #tiff-to-png', () => {
         .withArgs(sinon.match('pagefoo'));
 
       const converter = new ConvertTiff({ prefix: 'pagefoo' });
-      await converter.convert('/test/foo.tif', './public');
+      await converter.convert('/test/foo.tif', false, './public');
       mock.verify();
     });
 
@@ -201,7 +250,7 @@ describe('Convert: #tiff-to-png', () => {
         .withArgs(sinon.match('%d.png'));
 
       const converter = new ConvertTiff({});
-      await converter.convert('/test/foo.tif', './public');
+      await converter.convert('/test/foo.tif', false, './public');
       mock.verify();
     });
 
@@ -212,7 +261,7 @@ describe('Convert: #tiff-to-png', () => {
         .withArgs(sinon.match('_foo'));
 
       const converter = new ConvertTiff({ suffix: '_foo' });
-      await converter.convert('/test/foo.tif', './public');
+      await converter.convert('/test/foo.tif', false, './public');
       mock.verify();
     });
 
@@ -222,7 +271,7 @@ describe('Convert: #tiff-to-png', () => {
 
       const converter = new ConvertTiff({ type: 'jpg' });
       try {
-        await converter.convert('/test/foo.tif', './public');
+        await converter.convert('/test/foo.tif', false, './public');
       } catch (e) {
         String(e).should.equal(error);
       }
@@ -233,7 +282,7 @@ describe('Convert: #tiff-to-png', () => {
       sandbox.stub(ConvertTiff, 'call').rejects('Test Error');
 
       const converter = new ConvertTiff({ type: 'jpg' });
-      const { converted } = await converter.convert('/test/foo.tif', './public');
+      const { converted } = await converter.convert('/test/foo.tif', false, './public');
       converted.success.should.equal(false);
     });
 
@@ -242,7 +291,7 @@ describe('Convert: #tiff-to-png', () => {
       sandbox.stub(ConvertTiff, 'call').resolves(true);
 
       const converter = new ConvertTiff({ type: 'jpg' });
-      const { converted } = await converter.convert('/test/foo.tif', './public');
+      const { converted } = await converter.convert('/test/foo.tif', false, './public');
       converted.success.should.equal(true);
     });
 
@@ -253,7 +302,7 @@ describe('Convert: #tiff-to-png', () => {
         .withArgs(sinon.match('/path/to/tmp'));
 
       const converter = new ConvertTiff({ tmpPath: '/path/to/tmp' });
-      await converter.convert('/test/foo.tif', './public');
+      await converter.convert('/test/foo.tif', false, './public');
       mock.verify();
     });
 
@@ -269,12 +318,22 @@ describe('Convert: #tiff-to-png', () => {
       const converter = new ConvertTiff({ tmpPath: '/path/to/tmp', autoRemoveTmp: true });
 
       try {
-        await converter.convert('/test/foo.tif', './public');
+        await converter.convert('/test/foo.tif', false, './public');
       } catch (e) {
         e.should.equal(error);
       }
     });
 
+    it('should prepend the filename when an array and no location is passed', async () => {
+      sandbox.stub(ConvertTiff, 'createDir').resolves();
+      const mock = sandbox.mock(ConvertTiff)
+        .expects('call')
+        .withArgs(sinon.match('foo_%d'));
+
+      const converter = new ConvertTiff({ tmpPath: '/path/to/tmp' });
+      await converter.convert('/test/foo.tif', true);
+      mock.verify();
+    });
   });
 
   describe('ConvertOne', () => {
@@ -298,26 +357,6 @@ describe('Convert: #tiff-to-png', () => {
       mock.verify();
     });
 
-    it('Should log an error when the location is null', async () => {
-      const mock = sandbox.mock(logger)
-        .expects('error')
-        .withArgs('The location folder is required');
-
-      const converter = new ConvertTiff();
-      await converter.convertOne('./test/foo.tif');
-      mock.verify();
-    });
-
-    it('Should log an error when the location is empty', async () => {
-      const mock = sandbox.mock(logger)
-        .expects('error')
-        .withArgs('The location folder is required');
-
-      const converter = new ConvertTiff();
-      await converter.convertOne('./test/foo.tif', '');
-      mock.verify();
-    });
-
     it('Should call convert', async () => {
       const mock = sandbox.mock(ConvertTiff.prototype)
         .expects('convert')
@@ -332,7 +371,7 @@ describe('Convert: #tiff-to-png', () => {
 
       const converter = new ConvertTiff({ type: 'jpg' });
       const spy = sandbox.spy(converter, 'progress');
-      await converter.convertOne('/test/foo.tif', './public');
+      await converter.convertOne('/test/foo.tif', false, './public');
       spy.callCount.should.equal(1);
     });
 
@@ -341,7 +380,7 @@ describe('Convert: #tiff-to-png', () => {
 
       const converter = new ConvertTiff({ type: 'jpg' });
       const spy = sandbox.spy(converter, 'complete');
-      await converter.convertOne('/test/foo.tif', './public');
+      await converter.convertOne('/test/foo.tif', false, './public');
       spy.callCount.should.equal(1);
     });
 
@@ -355,7 +394,7 @@ describe('Convert: #tiff-to-png', () => {
         .withArgs(sinon.match('magick-bla.ext'));
 
       const converter = new ConvertTiff({ tmpPath: '/path/to/tmp', autoRemoveTmp: true });
-      await converter.convertOne('/test/foo.tif', './public');
+      await converter.convertOne('/test/foo.tif', false, './public');
       mock.verify();
     });
 
@@ -395,26 +434,6 @@ describe('Convert: #tiff-to-png', () => {
 
       const converter = new ConvertTiff();
       await converter.convertArray([]);
-      mock.verify();
-    });
-
-    it('Should log an error when the location is null', async () => {
-      const mock = sandbox.mock(logger)
-        .expects('error')
-        .withArgs('The location folder is required');
-
-      const converter = new ConvertTiff();
-      await converter.convertArray(['./test/foo.tif']);
-      mock.verify();
-    });
-
-    it('Should log an error when the location is empty', async () => {
-      const mock = sandbox.mock(logger)
-        .expects('error')
-        .withArgs('The location folder is required');
-
-      const converter = new ConvertTiff();
-      await converter.convertArray(['./test/foo.tif'], '');
       mock.verify();
     });
 
