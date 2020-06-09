@@ -14,7 +14,7 @@ describe('Convert: #tiff-to-png', () => {
   };
 
   let sandbox;
-  beforeEach(() => sandbox = sinon.sandbox.create());
+  beforeEach(() => sandbox = sinon.createSandbox());
   afterEach(() => sandbox.restore());
 
   describe('Initialise', () => {

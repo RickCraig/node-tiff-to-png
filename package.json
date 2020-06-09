@@ -1,6 +1,6 @@
 {
   "name": "tiff-to-png",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A batch converter for multipage tiff files to png (or any imagemagick supported type).",
   "main": "./lib/convert.js",
   "scripts": {
@@ -27,10 +27,10 @@
   "homepage": "https://github.com/RickCraig/node-tiff-to-png",
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^5.11.1",
-    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.1.0",
     "istanbul": "^0.4.5",
-    "mocha": "^5.2.0",
-    "sinon": "^7.2.2"
+    "mocha": "^7.2.0",
+    "sinon": "^9.0.2"
   }
 }
